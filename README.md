@@ -1,4 +1,4 @@
-Obstacle_Avoidance
+Obstacle Avoidance
 ==================
 Project to allow a UAV to avoid obstacles by using Computer Vision.
 
