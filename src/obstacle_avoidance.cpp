@@ -1,34 +1,88 @@
 #include "obstacle_avoidance.h"
 
+ObstacleAvoidance* ObstacleAvoidance::instance_ = NULL;
 
-static const std::string OPENCV_WINDOW = "Obstacle Avoidance";
-int threadtest_;
+//Constants
+static const std::string ORIGINAL_IMAGE_WINDOW = "Obstacle Avoidance Original";
+
+static const int MAX_OBJECT_DETECTION_MODES = 1; //indexed from 0
+static const int COLOR_DETECTION_MODE = 0;
+static const int SURF_DETECTION_MODE = 1;
+
+
+using namespace cv; //still prefixing some cv calls as I'm learning. Want to understand whats in cv and whats not
+
+
+ObstacleAvoidance* ObstacleAvoidance::Instance()
+{
+    if(!instance_)
+        instance_ = new ObstacleAvoidance();
+
+    return instance_;
+}
 
 ObstacleAvoidance::ObstacleAvoidance()
 {
+    instance_ = this;
+
     //construct image transport from ros node handle
     it_ = new image_transport::ImageTransport(nh_);
 
     // Subscribe to input video feed
     image_sub_ = it_->subscribe("/camera/image_raw", 1, &ObstacleAvoidance::imageProcessCB, this);
-    //publish output video feed
-    //image_pub_ = it_->advertise("/image_converter/output_video", 1);
 
-    //open window to show processed output
-    cv::namedWindow(OPENCV_WINDOW);
+    //open window to show original and processed image
+    cv::namedWindow(ORIGINAL_IMAGE_WINDOW);       
 
-    //use seperate thread to handle window events returns 1 if can use another thread, -1 if cannot
-    threadtest_ = cv::startWindowThread();
+    //initialize different tracking methods and their windows
+    color_object_detector_ = ColorObjectDetector::Instance();
+    color_object_detector_->openWindow();
+    surf_object_detector_ = SurfObjectDetector::Instance();
+    surf_object_detector_->openWindow();
+
+    //default setup
+    current_object_detector_ = color_object_detector_;
+    obstacle_detection_mode_ = 0;
+    //trackbar to select detection mode
+    cvCreateTrackbar("Obstacle Detection Mode: 0-color 1-SURF",ORIGINAL_IMAGE_WINDOW.c_str(),&obstacle_detection_mode_,MAX_OBJECT_DETECTION_MODES,ObstacleAvoidance::trackbarDetectionModeCB);
+
+
+    //store all object detectors for window management, order directly reflects trackbar
+    object_detectors_.push_back(color_object_detector_);
+    object_detectors_.push_back(surf_object_detector_);
+
+    //use seperate thread to handle window events returns 1 if can use another thread, 0 if cannot
+    threadSupported_ = cv::startWindowThread();    
 }
 
 ObstacleAvoidance::~ObstacleAvoidance()
 {
    delete it_;
-   cv::destroyWindow(OPENCV_WINDOW);
+   delete color_object_detector_;
+   cv::destroyAllWindows();   
+}
+
+
+/**
+ * callback had to be static or global, i used static
+ * static singleton can now reference members inside member function for callback
+ */
+void ObstacleAvoidance::trackbarDetectionModeCB(int next_mode)
+{    
+    //open only appropriate window close everything else    
+//    for(int i=0;i<ObstacleAvoidance::Instance()->object_detectors_.size();i++)
+//    {
+//        if(ObstacleAvoidance::Instance()->current_object_detector_ == ObstacleAvoidance::Instance()->object_detectors_[i])
+//            ObstacleAvoidance::Instance()->current_object_detector_->openWindow();
+//        else
+//            ObstacleAvoidance::Instance()->current_object_detector_->closeWindow();
+//    }
+    //switch detection modes
+    ObstacleAvoidance::Instance()->current_object_detector_ = ObstacleAvoidance::Instance()->object_detectors_[next_mode];
 }
 
 void ObstacleAvoidance::imageProcessCB(const sensor_msgs::ImageConstPtr& msg)
-{
+{    
     cv_bridge::CvImagePtr cv_ptr;
 
     try
@@ -41,14 +95,17 @@ void ObstacleAvoidance::imageProcessCB(const sensor_msgs::ImageConstPtr& msg)
         ROS_ERROR("cv_bridge exception: %s",exception.what());
         return;
     }
+    //show original image
+    cv::imshow(ORIGINAL_IMAGE_WINDOW,cv_ptr->image);
 
-    //draw circle                           radius=10       B  G  R thickness=1
-    cv::circle(cv_ptr->image,cv::Point(50,50),10,cv::Scalar(0,255,0),1);
+    //run object detection
+    current_object_detector_->findObjects(cv_ptr->image);
 
-    cv::imshow(OPENCV_WINDOW,cv_ptr->image);
+    //TODO::need to average frames obtained to account for camera moving
 
-    //program waits for 3 ms before continuing
-    cv::waitKey(3);
+
+    if(threadSupported_ == 0)
+        cv::waitKey(3); //program waits for 3 ms before continuing, helps for window interaction?
 }
 
 
@@ -57,11 +114,9 @@ int main(int argc, char** argv)
 {
   ros::init(argc, argv, "obstacle_avoidance_node");
   //run obstacle avoidance with ros
-
   ObstacleAvoidance oa;
 
   ros::spin();
 
- 
   return 0;
 }

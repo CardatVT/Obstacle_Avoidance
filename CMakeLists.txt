@@ -12,7 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   
 )
-#must be seperate?
+#must be seperate
 find_package( OpenCV REQUIRED )
 
 ###################################
@@ -50,7 +50,12 @@ include_directories(
  #)
 
 ## Declare a cpp executable
-add_executable(obstacle_avoidance_node src/obstacle_avoidance.cpp)
+add_executable(obstacle_avoidance_node 
+src/obstacle_avoidance.cpp
+src/color_object_detector.cpp
+src/object_detector.cpp
+src/surf_object_detector.cpp
+)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
