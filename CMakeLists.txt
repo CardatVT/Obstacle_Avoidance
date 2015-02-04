@@ -6,7 +6,7 @@ find_package(catkin REQUIRED COMPONENTS
   cv_bridge
   image_transport
   libuvc_camera
-  mavlink
+  mavros
   roscpp
   sensor_msgs
   std_msgs
@@ -53,7 +53,6 @@ include_directories(
 add_executable(obstacle_avoidance_node 
 src/obstacle_avoidance.cpp
 src/color_object_detector.cpp
-src/object_detector.cpp
 src/surf_object_detector.cpp
 )
 

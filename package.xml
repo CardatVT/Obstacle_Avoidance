@@ -14,7 +14,7 @@
   <build_depend>cv_bridge</build_depend>
   <build_depend>image_transport</build_depend>
   <build_depend>libuvc_camera</build_depend>
-  <build_depend>mavlink</build_depend>
+  <build_depend>mavros</build_depend>
   <build_depend>OpenCV</build_depend>
   <build_depend>roscpp</build_depend>
   <build_depend>sensor_msgs</build_depend>
@@ -24,7 +24,7 @@
   <run_depend>cv_bridge</run_depend>
   <run_depend>image_transport</run_depend>
   <run_depend>libuvc_camera</run_depend>
-  <run_depend>mavlink</run_depend>
+  <run_depend>mavros</run_depend>
   <run_depend>OpenCV</run_depend>
   <run_depend>roscpp</run_depend>
   <run_depend>sensor_msgs</run_depend>

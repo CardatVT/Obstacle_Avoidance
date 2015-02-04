@@ -11,12 +11,9 @@
 class ObjectDetector
 {
 public:
-  static ObjectDetector* Instance();
-  ObjectDetector();
-  virtual ~ObjectDetector();
-
-  virtual void openWindow();
-  virtual void findObjects(cv::Mat original_image);
+  //pure virtual: requires derived type to implement these functions
+  virtual void openWindow()=0;
+  virtual void findObjects(cv::Mat original_image)=0;
 
 };
 

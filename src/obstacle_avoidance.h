@@ -10,7 +10,9 @@
 #include "object_detector.h"
 #include "color_object_detector.h"
 #include "surf_object_detector.h"
-//#include <mavlink.h>
+//#include "mavros/Mavlink.h"
+//#include "mavros/mavros_plugin.h"
+
 
 //#include "opencv2/videoio.hpp" // opencv3 only
 

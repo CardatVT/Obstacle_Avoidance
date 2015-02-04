@@ -29,6 +29,7 @@ ColorObjectDetector::ColorObjectDetector()
     highV_ = 255;
 
     threshold_ = 100;
+    low_radius_ = 4;
     //need to track seperately as we should never set morph_radius_ to 0 (seg fault)
     //trackbars in opencv always have 0 as min...
     morph_trackbar_ = 5;
@@ -52,7 +53,8 @@ void ColorObjectDetector::openWindow()
     cvCreateTrackbar("High Saturation",FIND_COLOR_WINDOW.c_str(),&highS_,255);
     cvCreateTrackbar("Low Value",FIND_COLOR_WINDOW.c_str(),&lowV_,255);
     cvCreateTrackbar("High Value",FIND_COLOR_WINDOW.c_str(),&highV_,255);
-    cvCreateTrackbar("Threshold",FIND_COLOR_WINDOW.c_str(),&threshold_,255);
+   // cvCreateTrackbar("Threshold",FIND_COLOR_WINDOW.c_str(),&threshold_,255);
+    cvCreateTrackbar("Low Radius",FIND_COLOR_WINDOW.c_str(),&low_radius_,1000);
     cvCreateTrackbar("Morph Radius",FIND_COLOR_WINDOW.c_str(),&morph_trackbar_,20,ColorObjectDetector::morphTrackbarCB);
 }
 
@@ -131,15 +133,26 @@ void ColorObjectDetector::findObjects(cv::Mat original_image)
     std::vector<cv::Rect> boundRect(contours.size());
     std::vector<cv::Point2f>center (contours.size());
     std::vector<float> radius(contours.size());
+    //std::vector<cv::RotatedRect> minEllipse(contours.size());
+
+    //remove small contours , use area or length?
+    //for
+
 
     for(int i=0;i<contours.size();i++)
     {
         approxPolyDP(Mat(contours[i]),contours_poly[i],3,true);
+        //get bounding shapes based on contours
         boundRect[i] = cv::boundingRect(Mat(contours_poly[i]));
         cv::minEnclosingCircle((Mat)contours_poly[i],center[i],radius[i]);
+        //minEllipse[i] = cv::fitEllipse(contours_poly[i]);
     }
 
     //TODO::calculate area if under a certain area throw away
+//    for(int i=0;i<contours.size();i++)
+//    {
+//        if (radius[i] < low_radius_)
+//    }
 
     //draw
     cv::Mat drawing = cv::Mat::zeros(img_threshold.size(), CV_8UC3);
@@ -148,6 +161,7 @@ void ColorObjectDetector::findObjects(cv::Mat original_image)
         cv::Scalar color = cv::Scalar(rng.uniform(0,255), rng.uniform(0,255), rng.uniform(0,255));
         cv::drawContours(drawing,contours_poly,i,color,1,8,vector<Vec4i>(),0,Point());
         cv::rectangle(drawing,boundRect[i].tl(),boundRect[i].br(),color,2,8,0);
+        //cv::ellipse(drawing,minEllipse[i]);
         cv::circle(drawing,center[i],(int)radius[i],color,2,8,0);
     }
 

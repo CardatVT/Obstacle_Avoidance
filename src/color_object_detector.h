@@ -36,6 +36,7 @@ private:
   int highV_;
 
   int threshold_;
+  int low_radius_;
   int morph_trackbar_;
   int morph_radius_;
 
