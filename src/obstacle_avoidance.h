@@ -7,14 +7,13 @@
 #include <sensor_msgs/image_encodings.h>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
+
 #include "object_detector.h"
 #include "color_object_detector.h"
 #include "surf_object_detector.h"
-//#include "mavros/Mavlink.h"
-//#include "mavros/mavros_plugin.h"
+#include "basic_shape_detector.h"
 
-
-//#include "opencv2/videoio.hpp" // opencv3 only
+#include <mavros/CommandTOL.h>
 
 /**
  * Runs different object detection modes. Processes resulting images with detected obstacles and makes decisions based on resolved features.
@@ -50,6 +49,7 @@ private:
 
   ColorObjectDetector* color_object_detector_;
   SurfObjectDetector* surf_object_detector_;
+  BasicShapeDetector* shape_object_detector_;
 
   void imageProcessCB(const sensor_msgs::ImageConstPtr& msg);
   void findColoredObjects(cv_bridge::CvImagePtr cv_ptr);

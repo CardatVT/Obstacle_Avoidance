@@ -54,6 +54,7 @@ add_executable(obstacle_avoidance_node
 src/obstacle_avoidance.cpp
 src/color_object_detector.cpp
 src/surf_object_detector.cpp
+src/basic_shape_detector.cpp
 )
 
 ## Add cmake target dependencies of the executable/library

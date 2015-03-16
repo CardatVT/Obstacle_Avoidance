@@ -5,9 +5,10 @@ ObstacleAvoidance* ObstacleAvoidance::instance_ = NULL;
 //Constants
 static const std::string ORIGINAL_IMAGE_WINDOW = "Obstacle Avoidance Original";
 
-static const int MAX_OBJECT_DETECTION_MODES = 1; //indexed from 0
+static const int MAX_OBJECT_DETECTION_MODES = 2; //indexed from 0
 static const int COLOR_DETECTION_MODE = 0;
 static const int SURF_DETECTION_MODE = 1;
+static const int SHAPE_DETECTION_MODE = 2;
 
 
 using namespace cv; //still prefixing some cv calls as I'm learning. Want to understand whats in cv and whats not
@@ -39,17 +40,21 @@ ObstacleAvoidance::ObstacleAvoidance()
     color_object_detector_->openWindow();
     surf_object_detector_ = SurfObjectDetector::Instance();
     surf_object_detector_->openWindow();
-
-    //default setup
-    current_object_detector_ = color_object_detector_;
-    obstacle_detection_mode_ = 0;
-    //trackbar to select detection mode
-    cvCreateTrackbar("Obstacle Detection Mode: 0-color 1-SURF",ORIGINAL_IMAGE_WINDOW.c_str(),&obstacle_detection_mode_,MAX_OBJECT_DETECTION_MODES,ObstacleAvoidance::trackbarDetectionModeCB);
+    shape_object_detector_ = BasicShapeDetector::Instance();
+    shape_object_detector_->openWindow();
 
 
     //store all object detectors for window management, order directly reflects trackbar
     object_detectors_.push_back(color_object_detector_);
     object_detectors_.push_back(surf_object_detector_);
+    object_detectors_.push_back(shape_object_detector_);
+
+
+    //default setup
+    current_object_detector_ = color_object_detector_;
+    obstacle_detection_mode_ = 0;
+    //trackbar to select detection mode
+    cvCreateTrackbar("Obstacle Detection Mode: 0-color 1-SURF 2-shape",ORIGINAL_IMAGE_WINDOW.c_str(),&obstacle_detection_mode_,MAX_OBJECT_DETECTION_MODES,ObstacleAvoidance::trackbarDetectionModeCB);
 
     //use seperate thread to handle window events returns 1 if can use another thread, 0 if cannot
     threadSupported_ = cv::startWindowThread();    
@@ -69,14 +74,6 @@ ObstacleAvoidance::~ObstacleAvoidance()
  */
 void ObstacleAvoidance::trackbarDetectionModeCB(int next_mode)
 {    
-    //open only appropriate window close everything else    
-//    for(int i=0;i<ObstacleAvoidance::Instance()->object_detectors_.size();i++)
-//    {
-//        if(ObstacleAvoidance::Instance()->current_object_detector_ == ObstacleAvoidance::Instance()->object_detectors_[i])
-//            ObstacleAvoidance::Instance()->current_object_detector_->openWindow();
-//        else
-//            ObstacleAvoidance::Instance()->current_object_detector_->closeWindow();
-//    }
     //switch detection modes
     ObstacleAvoidance::Instance()->current_object_detector_ = ObstacleAvoidance::Instance()->object_detectors_[next_mode];
 }

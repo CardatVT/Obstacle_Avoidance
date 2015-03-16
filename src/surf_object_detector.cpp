@@ -33,7 +33,5 @@ void SurfObjectDetector::openWindow()
 
 void SurfObjectDetector::findObjects(cv::Mat original_image)
 {
-    //testing that window switching works
-    ROS_ERROR("surfing");
     cv::imshow(SURF_WINDOW,original_image);
 }
